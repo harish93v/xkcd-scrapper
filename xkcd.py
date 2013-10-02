@@ -11,17 +11,16 @@ import codecs
 import string
 
 base_url = "http://www.xkcd.com/"
-total = 1244
 
-
-def down_them_all(directory, start=1):
-    links = [base_url + str(i) for i in range(start, total + 1)]
+def down_them_all(directory, start = 1, end = 1):
+    links = [base_url + str(i) for i in range(start, end)]
     print "Starting download of all links..."
     for url in links:
         print "Fetching" + url
         if int(url.split('/')[-1]) != 404:
             down_content(url, directory + url.split('/')[-1] + '/')
-
+        else:
+            return
 
 def down_content(url, directory='/tmp/xkcd'):
     if os.path.exists(directory):
@@ -41,7 +40,6 @@ def down_content(url, directory='/tmp/xkcd'):
     else:
         img_url = img_section.img['src']
         img_text = unicode(img_section.img['title'])
-    # print ord(img_text[-1])
     img_name = title + '.' + img_url.split('.')[-1]
     os.makedirs(directory)
     imgpath = os.path.join(directory, img_name)
@@ -53,7 +51,13 @@ def down_content(url, directory='/tmp/xkcd'):
     print "Done with downloading" + url + "Check at" + directory
 
 if __name__ == '__main__':
+    start = 1
+    end = 1
+    if len(sys.argv) == 2:
+        start = sys.argv[1]
+    elif len(sys.argv) == 3:
+        start = sys.argv[1]
+        end = sys.argv[2]
     directory = '/tmp/xkcd'
-    #directory = raw_input('Where to store?')
     print "Let the game begin!"
-    down_them_all(directory)
+    down_them_all(directory,start,end)
