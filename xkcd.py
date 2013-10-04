@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from urllib2 import urlopen
 from urllib import urlretrieve
+from joblib import Parallel, delayed
 import os
 import sys
 import io
@@ -9,18 +10,19 @@ import lxml
 from lxml.html.clean import Cleaner
 import codecs
 import string
+import time
 
 base_url = "http://www.xkcd.com/"
 
-def down_them_all(directory, start = 1, end = 1):
-    links = [base_url + str(i) for i in range(start, end)]
-    print "Starting download of all links..."
-    for url in links:
-        print "Fetching" + url
-        if int(url.split('/')[-1]) != 404:
-            down_content(url, directory + url.split('/')[-1] + '/')
-        else:
-            return
+
+def down_links(directory, start=1, end=1):
+    # Leave 404 because it is a 404 page
+    start = int(start)
+    end = int(end) + 1  # To include end in result
+    links = [[directory + (base_url + str(i)).split("/")[-1] + '/', base_url + str(i)]
+             for i in range(start, end) if i != 404]
+    return links
+
 
 def down_content(url, directory='/tmp/xkcd'):
     if os.path.exists(directory):
@@ -51,13 +53,19 @@ def down_content(url, directory='/tmp/xkcd'):
     print "Done with downloading" + url + "Check at" + directory
 
 if __name__ == '__main__':
+    start_time = time.time()
     start = 1
-    end = 1
-    if len(sys.argv) == 2:
+    end = 1244
+    no_jobs = 1
+    if len(sys.argv) >= 2:
         start = sys.argv[1]
-    elif len(sys.argv) == 3:
-        start = sys.argv[1]
+    if len(sys.argv) >= 3:
         end = sys.argv[2]
+    if len(sys.argv) >= 4:
+        no_jobs = int(sys.argv[3])
     directory = '/tmp/xkcd'
     print "Let the game begin!"
-    down_them_all(directory,start,end)
+    links = down_links(directory, start, end)
+    Parallel(n_jobs=no_jobs)(
+        delayed(down_content)(link[1], link[0]) for link in links)
+    print time.time() - start_time, "seconds"
