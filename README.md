@@ -14,4 +14,4 @@ Dependencies:
 * Rather than mirroring using curl or wget, this will consume less space as they use the same template through out the website :)
 * Uses multiprocess to create paralleize the downloads
 
-Usage: python xkcd.py <start> <end> <no_of_processes>
+Usage: <code> python xkcd.py <start> <end> <no_of_processes> </code>
